@@ -1,0 +1,29 @@
+{
+  "skill_name": "small-design",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want a component shot for a tide and surf conditions site, art-directed with a proper art movement, not a UI trend. Start small by proposing the style and the component. Don't generate anything until I've agreed.",
+      "expected_output": "Directed mode. Proposes one art-history movement and one focused component with a thesis and alternatives, then stops at the first gate without generating images or screens.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "one-shot this: a small design shot of a plant watering reminder card for a houseplant app, driven by an art style. decide everything yourself, don't stop to ask me, use mdmedia for the art and build it in stitch.",
+      "expected_output": "One-shot mode. Works through style, feeling, classification, font, and plan in order, logging decisions in decisions.md and DESIGN.md (validating DESIGN.md with @google/design.md lint); generates artwork; builds a Stitch screen whose prompt includes the wrapper, closed text list and intrinsic grid layout paragraph; runs check_screen.ts; reports all gate decisions.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "We've got the recipe card done in the Fauvism project (DESIGN.md and the prompt files are in this folder). What should the next component on the page be? And pick the type for the page properly, by what it should make people feel, before you name any fonts.",
+      "expected_output": "Proposes the next component with the question it answers, contents and alternatives, and asks whether new artwork is needed. Runs the type decision as feeling first, then classification from google-fonts.md, then font, without naming a font in the first pass.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Design an entire crypto dashboard web page for me with portfolio overview, transaction history, watchlists, news feed, and buy/sell forms.",
+      "expected_output": "Applies small-design principles: pushes back on building a sprawling dashboard all at once. Proposes starting small with a single core anchor component (e.g. portfolio asset card) driven by an art movement to establish the palette, mood, and DESIGN.md before expanding.",
+      "files": []
+    }
+  ]
+}
