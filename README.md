@@ -1,48 +1,41 @@
-# wrist-slap-me
+# Skills
 
-`/wrist-slap-me` is a focus guardrail for coding agents. It compares proposed work with the two or three priorities you have deliberately set for the current season. Work that meets a priority proceeds normally. Work that misses every priority receives a direct wrist slap, a concrete cost, and three ways forward: park it, make the case, or overrule it.
+Agent skills I use to help get things done.
 
-The skill is agent-agnostic: it lives under `.agents/skills/wrist-slap-me`, with no dependency on a vendor-specific skill directory.
+### Focus
 
-## What it does
+#### [wrist-slap-me](skills/wrist-slap-me/)
 
-The skill treats `PRIORITIES.md` in the repository root as the source of truth. Each priority has a short, testable question and a living **Now** list. When an idea fails all priority tests, the agent begins its response with:
+The bottleneck in agentic coding is not about capability, it's focus.
 
-> **WRIST SLAP!** This is not a <priority names> task.
+A focus guardrail for work that does not serve the priorities declared in a project's `PRIORITIES.md`. It applies the priority tests, makes the cost of a detour concrete, and offers three exits: park the idea, make the case, or overrule it.
 
-It then states the failed test, identifies the Now-list work that would be displaced, and offers these exits:
+Setup and usage details are in the skill's [instructions](skills/wrist-slap-me/SKILL.md). Its [priority format](skills/wrist-slap-me/PRIORITIES-FORMAT.md) defines the `PRIORITIES.md` contract used by the skill.
 
-- **Park it:** save the idea in `.wrist-slaps/parked.md`.
-- **Make the case:** show how it serves a priority; if it does, add it to that priority's Now list.
-- **Overrule:** proceed because you choose to, while recording the decision in `.wrist-slaps/log.md`.
+### Design
 
-`/wrist-slap-me log` summarizes patterns in the log, such as priorities most often raided and the ratio of parked to overruled ideas.
+#### [small-design](skills/small-design/)
 
-## Setup
+To develop a good design, you must start small.
 
-1. Add this repository's `.agents/skills/wrist-slap-me` directory to the skills location your coding agent discovers. For agents that scan repository-local skills, keep it in the repository root as shown.
-2. Invoke `/wrist-slap-me setup`. It interviews you one question at a time to create or revise `PRIORITIES.md`.
-3. Add the following standing instruction to the repository's `AGENTS.md` (or equivalent agent instruction file):
+A workflow for developing web UI components and pages by starting with a single focused component anchored by a fine-art movement. The artwork drives the palette, contrast, and emotional tone, while typography is chosen by feeling and layout is intrinsic CSS grid. As components earn their place, decisions grow organically into a living `DESIGN.md`.
 
-```markdown
-## Priorities are law
+Setup and usage details are in the skill's [instructions](skills/small-design/SKILL.md).
 
-`PRIORITIES.md` names this repo's current priorities, each with a one-sentence test.
-Judge every piece of proposed work — the user's and your own — against those tests before starting it.
-Work that passes proceeds without comment. Work that fails every test gets the `/wrist-slap-me` treatment: slap first, then the exits.
-```
+#### [art-research](skills/art-research/)
 
-4. Keep the **Now** lists current. The skill uses them to make the tradeoff concrete.
+Learn to see the style behind an image.
 
-Use [PRIORITIES-FORMAT.md](.agents/skills/wrist-slap-me/PRIORITIES-FORMAT.md) as the template and rules for `PRIORITIES.md`.
+Breaks down the art style of supplied images like an art teacher: traditional vocabulary, sourced history, meaning, common uses, and emotional effect. It can also save each breakdown into a browsable library, with one record per artwork and style pages that link to them. Set `output_directory` in the skill's [`config.json`](skills/art-research/config.json) to enable saving; it is unset by default.
 
-## Files created in a project using the skill
+Usage details are in the skill's [instructions](skills/art-research/SKILL.md).
 
-```text
-PRIORITIES.md
-.wrist-slaps/
-  log.md
-  parked.md
-```
+### Social
 
-The skill creates and updates the two `.wrist-slaps` files as decisions are made. They are intentionally project-local, so each repository retains its own focus history.
+#### [panoramic-carousel](skills/panoramic-carousel/)
+
+Turn one approved composition into a seamless multi-image post.
+
+Exports an image or an approved website design (including a Stitch screen) as consecutive vertical slices, with a master, ordered PNGs, a preview, a ZIP, and pixel-level verification that the slices reconstruct the original.
+
+Setup and usage details are in the skill's [instructions](skills/panoramic-carousel/SKILL.md).
