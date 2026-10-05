@@ -10,7 +10,7 @@ The bottleneck in agentic coding is not about capability, it's focus.
 
 A focus guardrail for work that does not serve the priorities declared in a project's `PRIORITIES.md`. It applies the priority tests, makes the cost of a detour concrete, and offers three exits: park the idea, make the case, or overrule it.
 
-Setup and usage details are in the skill's [instructions](skills/wrist-slap-me/SKILL.md). Its [priority format](skills/wrist-slap-me/PRIORITIES-FORMAT.md) defines the `PRIORITIES.md` contract used by the skill.
+Setup and usage details are in the skill's [instructions](skills/wrist-slap-me/SKILL.md). Its [priority format](skills/wrist-slap-me/references/PRIORITIES-FORMAT.md) defines the `PRIORITIES.md` contract used by the skill.
 
 ### Design
 
