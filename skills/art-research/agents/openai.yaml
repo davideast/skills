@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Art Research Breakdown'
+  short_description: 'Research art styles and maintain a browsable library'
+  default_prompt: 'Use $art-research-breakdown to explain this image in traditional art-school terms and route its research into my existing art library, reusing matching artwork and style entries.'
