@@ -199,4 +199,5 @@ After each build, report: the thesis, what was built, the check results, anythin
 | `references/layout.md` | Writing any screen prompt (step 8). |
 | `references/screen-prompt.md` | Writing any screen prompt (step 8). |
 | `references/troubleshooting.md` | A generation or check fails (steps 6 to 9). |
-| `references/example-orphism.md` | You want to see one full pass of the loop. |
+| `references/example-orphism.md` | You want to see one full pass of the loop (historical). |
+| `references/example-command-palette.md` | You want to see what a strong component plan (step 5) looks like. |
