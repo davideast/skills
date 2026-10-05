@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Panoramic Carousel'
+  short_description: 'Export continuous artwork as verified carousel slices'
+  default_prompt: 'Use $panoramic-carousel to export this design as consecutive vertical slices while preserving its original layout.'
