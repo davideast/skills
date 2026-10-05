@@ -73,7 +73,3 @@ spacing:
 - Reductive: three or four colours, two or three fields, one movement. Saturated, with real contrast between the lightest and darkest field.
 - No text in the image, no bare canvas at the edges, no famous-painting pastiche.
 - When multiple covers exist, check them side by side at thumbnail and feature size, and regenerate or crop any that fail.
-
-## Worked example
-
-`/Users/davideast/design/shots/fathom-system/` holds a complete design record (`DESIGN.md`, including its "Not the reference" table), five covers in `art/` with their URLs in `art/urls.txt`, and the components built from it. Do not use `drift-system/`: it was rejected for copying the director's reference designs.
