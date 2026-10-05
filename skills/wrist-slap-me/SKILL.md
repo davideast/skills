@@ -10,15 +10,15 @@ The user wrote the law in a clear-headed moment precisely because their in-the-m
 
 ## The artifacts
 
-- `PRIORITIES.md` — the law. Format in [PRIORITIES-FORMAT.md](PRIORITIES-FORMAT.md). Two or three priorities, never more; five is a wish list.
+- `PRIORITIES.md` — the law. Format in [PRIORITIES-FORMAT.md](./references/PRIORITIES-FORMAT.md). Two or three priorities, never more; five is a wish list.
 - `.wrist-slaps/log.md` — one line per slap: `- <date> · <proposal gist> · failed: <priority tests> · outcome: parked | case-made | overruled | withdrawn`.
 - `.wrist-slaps/parked.md` — the **parking lot**: one line per parked idea, enough to resurrect it when the season changes. Parked is saved, not killed — that is what makes a slap acceptable to a vision-driven user.
 
 ## Branch: set or revise the law
 
-Use a one-question-at-a-time interview, with a recommended answer attached to each question, until every priority has a name, a test, what counts, what does not, and a Now list. A priority is done when a stranger could judge any proposal using only its test.
+Run the `/grilling` skill — one question at a time, a recommended answer attached to each — until every priority has a name, a test, what counts, what doesn't, and a Now list. A priority is done when a stranger could judge any proposal using only its test.
 
-Then offer to wire the standing check into `AGENTS.md` (or the agent instruction file used by the repository), so the law loads every session without anyone remembering to invoke anything:
+Then offer to wire the standing check into `AGENTS.md` (or `CLAUDE.md`), so the law loads every session without anyone remembering to invoke anything:
 
 ```markdown
 ## Priorities are law
@@ -30,9 +30,9 @@ Work that passes proceeds without comment. Work that fails every test gets the `
 
 ## Branch: the slap
 
-When proposed work fails every test in the law, the slap is the **first line of the reply**. No praise first, no “interesting idea, but”. The suddenness is the feature:
+When proposed work fails every test in the law, the slap is the **first line of the reply**. No praise first, no "interesting idea, but". The suddenness is the feature:
 
-> **WRIST SLAP!** This is not a <priority names> task.
+> **WRIST SLAP!** This is not a \<priority names\> task.
 
 Then make it useful — a slap that only blocks is a lost argument; a slap that reorients is a save. Three short lines:
 
@@ -47,4 +47,4 @@ Log the outcome whichever exit is taken. Work that passes a test needs no ceremo
 
 ## Branch: review the log
 
-On “show me my slaps” or `log`: read `.wrist-slaps/log.md` and report the patterns, not the list — which priority gets raided most, the park-to-overrule ratio, streaks and lapses. The log exists so the user can see their own behavior, not to shame them.
+On "show me my slaps" or `log`: read `.wrist-slaps/log.md` and report the patterns, not the list — which priority gets raided most, the park-to-overrule ratio, streaks and lapses. The log exists so the user can see their own behavior, not to shame them.
