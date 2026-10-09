@@ -2,7 +2,7 @@
 
 A screen prompt is complete and concrete: exact colours, named fonts, sizes, grid tracks, quoted text. Vague words such as "editorial" or "premium" make the generator invent things. Write every prompt as if creating the screen from scratch, including prompts used with `stitch edit screen`.
 
-Save the prompt as `<name>.prompt.md`, the visible strings as `<name>.text.txt` (one per line) and the artwork URLs as `<name>.images.txt` (one per line, in page order). The check script reads the last two.
+Save the prompt as `<name>.prompt.md`, the visible strings as `<name>.text.txt` (one per line) and the artwork URLs as `<name>.images.txt` (one per line, with optional `# screen=<id> file=<path>` comments). The check script reads the last two.
 
 ## The parts, in order
 

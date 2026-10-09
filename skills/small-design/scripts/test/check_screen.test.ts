@@ -85,6 +85,48 @@ test("baseClass strips variants and the important marker", () => {
   assert.equal(baseClass("-mx-2"), "-mx-2");
 });
 
+test("images list supports inline # metadata comments and reused cover URLs across states", () => {
+  const repeatedCoverHtml = read("clean.html").replace(
+    "https://lh3.googleusercontent.com/aida/two=w1600",
+    "https://lh3.googleusercontent.com/aida/one=w1600",
+  );
+  const findings = lintScreen(repeatedCoverHtml, {
+    ...OPTS,
+    images: ["https://lh3.googleusercontent.com/aida/one=w1600  # screen=s1 project=p1 file=art/one.jpg"],
+  });
+  assert.deepEqual(failures(findings), []);
+});
+
+test("unsuffixed FIFE URL fails with 512px diagnostic; suffixed aida-public URL passes with a warning", () => {
+  const rehostedUnsuffixed = read("clean.html").replace(
+    "https://lh3.googleusercontent.com/aida/one=w1600",
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuRehostedOne",
+  );
+  const fails = failures(lintScreen(rehostedUnsuffixed, OPTS));
+  assert.equal(fails.length, 1);
+  has(fails, "artwork URL is missing a size suffix (serves 512px)");
+
+  const rehostedSuffixed = read("clean.html").replace(
+    "https://lh3.googleusercontent.com/aida/one=w1600",
+    "https://lh3.googleusercontent.com/aida-public/AB6AXuRehostedOne=w1600",
+  );
+  const findings = lintScreen(rehostedSuffixed, OPTS);
+  assert.deepEqual(failures(findings), []);
+  has(warnings(findings), "artwork URL was re-hosted to durable aida-public URL");
+});
+
+test("CSS background-image URLs and repeated/curly-quote text pass", () => {
+  const cssBgAndRepeatedText = read("clean.html")
+    .replace(
+      '<img class="cover" src="https://lh3.googleusercontent.com/aida/one=w1600" alt="">',
+      '<div class="cover" style="background-image: url(\'https://lh3.googleusercontent.com/aida/one=w1600\')"></div>',
+    )
+    .replace("<button class=\"px-4 py-2 rounded-full\">Open</button>", "<button>Open</button><button>Open</button>");
+
+  const findings = lintScreen(cssBgAndRepeatedText, OPTS);
+  assert.deepEqual(failures(findings), []);
+});
+
 test("CLI exits 0 on pass, 1 on fail, 2 on bad usage", () => {
   const cli = fileURLToPath(new URL("../check_screen.ts", import.meta.url));
   const run = (...args: string[]) => spawnSync(process.execPath, [cli, ...args], { encoding: "utf8" });
@@ -100,3 +142,5 @@ test("CLI exits 0 on pass, 1 on fail, 2 on bad usage", () => {
 
   assert.equal(run("--text", textFile).status, 2);
 });
+
+

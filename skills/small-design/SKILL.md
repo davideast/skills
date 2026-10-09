@@ -115,14 +115,16 @@ Create a project (first time only), upload each artwork image as a screen, and f
 ```bash
 stitch create project --json '{"title":"<title>"}' --format json
 stitch upload screen <file.jpg> --project <id> --title "<title>" --json
-stitch get screen <screen-id> --project <id> --json     # data.screenshot.downloadUrl, then append =w<width>
+stitch get screen <image-screen-id> --project <id> --json     # data.screenshot.downloadUrl, then append =w<width>
 ```
+
+Record the uploaded `<image-screen-id>` and local `<file.jpg>` path alongside the URL in `DESIGN.md` (and optionally as an inline `# screen=<image-screen-id> file=<file.jpg>` comment in `<name>.images.txt`). Because `/aida/` URLs expire after 1–2 days while the uploaded `IMAGE` screen persists in the project, calling `stitch get screen <image-screen-id> --project <id> --json` at any time mints a fresh signed `downloadUrl` that you can swap in without re-uploading.
 
 ### 8. Write the prompt and build
 Read `references/screen-prompt.md` and `references/layout.md`. Save three files in the project folder for each screen:
-- `<name>.prompt.md`: the full prompt;
+- `<name>.prompt.md`: the full prompt (if reusing an `/aida/` URL from an earlier session, verify it still returns HTTP 200 or fetch a fresh `downloadUrl` from `<image-screen-id>` first);
 - `<name>.text.txt`: every visible string, one per line;
-- `<name>.images.txt`: the artwork URLs in page order, one per line.
+- `<name>.images.txt`: the expected artwork URLs, one per line (optional `# screen=<id> file=<path>` comments are ignored by the linter).
 
 First screen of a project:
 ```bash
@@ -158,12 +160,13 @@ node <skill-dir>/scripts/check_screen.ts <project-folder>/<screen-id>.html \
 stitch get project <id> --json --no-cache --fields screenInstances.id
 ```
 
-The lint checks the page wrapper, the visible text against the list, the artwork URLs (`<img src>` and `<video poster>`), the fonts, icon fonts and the layout rules. It reads only the local HTML file, so you can rerun it on patched HTML without calling Stitch.
+The lint checks the page wrapper, the visible text against the list, the artwork URLs (`<img src>`, `<video poster>`, and CSS `url(...)`), the fonts, icon fonts and the layout rules. It reads only the local HTML file, so you can rerun it on patched HTML without calling Stitch.
 
 - **Content and layout failures** are fixed by correcting the prompt and building again.
 - **Canvas placement** often lags for generated screens; that is normal, not an error. **Never generate or edit again because a screen is missing from the canvas: every generation spends the user's credits.** Poll in the background with command 4 (once a minute for up to ten minutes). Only if it is still missing, capture the existing HTML and upload it (`references/troubleshooting.md`). The uploaded copy gets a new id; use it from then on.
 - **Credits:** one generation per screen. Fix small layout or copy problems by patching the downloaded HTML before the upload, and update the prompt file to match. Regenerate only for a genuine design failure, and say why.
-- **A rewritten artwork URL** (Stitch sometimes swaps in its own 512px copy) is fixed by restoring your URL in the downloaded HTML before the capture-and-upload.
+- **A rewritten `aida-public` artwork URL:** Stitch sometimes re-hosts your image to `https://lh3.googleusercontent.com/aida-public/...` without a size suffix (which serves at 512px). Unlike `/aida/` URLs, `aida-public` URLs do not expire—so if the screenshot confirms Stitch kept your artwork, **keep the `aida-public` URL** and append `=w<native width>` (or `=s0`) to it in the HTML before capture-and-upload.
+- **An expired `/aida/` artwork URL:** When an `/aida/` URL expires after 1–2 days (HTTP 403), run `stitch get screen <image-screen-id> --project <id> --json` to mint a fresh `data.screenshot.downloadUrl=w<width>` and swap it into your prompt, HTML, and `DESIGN.md`.
 
 Then look at the screenshot and judge it against the principles, honestly, including flaws the script cannot see.
 

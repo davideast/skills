@@ -14,7 +14,7 @@
  */
 import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
-import { lintScreen } from "./lint.ts";
+import { lintScreen, stripImageComment } from "./lint.ts";
 
 const USAGE = `usage: node check_screen.ts <screen.html> --text <strings.txt>
        [--images <urls.txt>] [--fonts "Family One,Family Two"] [--allow-absolute]`;
@@ -23,6 +23,13 @@ function readLines(path: string): string[] {
   return readFileSync(path, "utf8")
     .split(/\r?\n/)
     .map((l) => l.trim())
+    .filter(Boolean);
+}
+
+function readImageLines(path: string): string[] {
+  return readFileSync(path, "utf8")
+    .split(/\r?\n/)
+    .map(stripImageComment)
     .filter(Boolean);
 }
 
@@ -59,7 +66,7 @@ function main(): number {
 
   const findings = lintScreen(readFileSync(positionals[0], "utf8"), {
     text: readLines(values.text),
-    images: values.images ? readLines(values.images) : undefined,
+    images: values.images ? readImageLines(values.images) : undefined,
     fonts,
     allowAbsolute: values["allow-absolute"],
   });

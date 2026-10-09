@@ -28,13 +28,13 @@ Failures seen while this workflow was developed, and what to do about each.
 
 | Symptom | What to do |
 |---|---|
-| The check fails the artwork URL, and the page shows an `aida-public` URL | Stitch re-hosted the image at 512px. Put your suffixed URL back in the downloaded HTML, then capture and upload. |
+| The check fails the artwork URL, and the page shows an `aida-public` URL | Stitch re-hosted the image at 512px without a size suffix. Confirm in the screenshot that Stitch kept your artwork (rather than generating a replacement); if so, keep the non-expiring `aida-public` URL and append `=w<native width>` (or `=s0`) to it in the HTML, then capture and upload. |
+| An `/aida/` artwork URL expired (broken image or HTTP 403 after 1–2 days) | Run `stitch get screen <image-screen-id> --project <id> --json` to mint a fresh `data.screenshot.downloadUrl=w<width>` from the uploaded `IMAGE` screen ID recorded in `DESIGN.md` / `<name>.images.txt`, swap the fresh URL in, and capture and upload if updating the canvas. |
 | `stitch edit` returns the old id | The new screen's id is in `data.updated.id` (or in an `htmlCode`-bearing object deeper in the JSON), not `data.id`. |
 | An edit with a tiny prompt reports success but nothing changed | Send the complete prompt. |
 | A highlighted row inside a subgrid pushes its icon into the text | Padding on a subgrid row squeezes its outer tracks. Draw the highlight with `outline` and `outline-offset`, or keep padding outside the subgrid. |
 | Rows in a shared subgrid spread their lines apart | Add `align-content: start` to the content inside the shared row. |
 | A visually hidden input fails the layout check | Tailwind's `sr-only` uses absolute positioning. Leave the hidden input out of the shot. |
-| The text check fails on a string shown more than once | List it in the text file once per appearance. |
 | The text check fails on capitalised labels | Do not use CSS `uppercase`; write the string in the case it should appear. |
 | Keyboard glyphs (↑ ↓ ↵) render tiny | Draw them as inline SVG. |
 | `stitch url` says `"verified": false` | Ignore it; the `screenInstances` check (SKILL.md step 9, command 4) is the reliable one. |
