@@ -171,12 +171,57 @@ function checkText(page: Page, expected: string[], rep: Report) {
   }
 }
 
-function checkImages(page: Page, expected: string[], rep: Report) {
+/** Strip inline `# ...` metadata comments from an images.txt line. */
+export function stripImageComment(line: string): string {
+  const hashIdx = line.indexOf("#");
+  return (hashIdx >= 0 ? line.slice(0, hashIdx) : line).trim();
+}
+
+/** Extract trailing FIFE size suffix such as `=w1600` or `=s0` from a URL. */
+export function fifeSizeSuffix(url: string): string | null {
+  const m = url.match(/=([sw]\d+)$/);
+  return m ? `=${m[1]}` : null;
+}
+
+/** True when `url` is a Stitch re-hosted `aida-public` FIFE URL. */
+export function isAidaPublicUrl(url: string): boolean {
+  return /^https:\/\/lh[3-6][^/]*\.googleusercontent\.com\/aida-public\//.test(url);
+}
+
+function checkImages(page: Page, expectedRaw: string[], rep: Report) {
+  const expected = expectedRaw.map(stripImageComment).filter(Boolean);
   const got = page.images;
-  const same = got.length === expected.length && got.every((u, i) => u === expected[i]);
-  if (same) {
-    rep.ok(`artwork URLs match, in order (${got.length})`);
-    return;
+  if (got.length === expected.length) {
+    let allMatch = true;
+    const unsuffixedAidaPublic: string[] = [];
+    for (let i = 0; i < expected.length; i++) {
+      const g = got[i];
+      const e = expected[i];
+      if (g === e) continue;
+      if (isAidaPublicUrl(g)) {
+        const expSuffix = fifeSizeSuffix(e);
+        const gotSuffix = fifeSizeSuffix(g);
+        if (gotSuffix && (gotSuffix === expSuffix || gotSuffix === "=s0")) {
+          continue;
+        }
+        unsuffixedAidaPublic.push(
+          `artwork URL ${i + 1} was re-hosted to aida-public at 512px (missing ${expSuffix ?? "=w<width>"}); ` +
+            `append ${expSuffix ?? "=w<width>"} to the aida-public URL in the HTML ` +
+            `(or run: node scripts/artwork.ts fix-html <screen.html> --images <images.txt>)`,
+        );
+        allMatch = false;
+      } else {
+        allMatch = false;
+      }
+    }
+    if (allMatch) {
+      rep.ok(`artwork URLs match, in order (${got.length})`);
+      return;
+    }
+    if (unsuffixedAidaPublic.length > 0) {
+      for (const msg of unsuffixedAidaPublic) rep.fail(msg);
+      return;
+    }
   }
   const short = (urls: string[]) => JSON.stringify(urls.map((u) => u.slice(0, 70)));
   rep.fail(

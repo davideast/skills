@@ -28,7 +28,8 @@ Failures seen while this workflow was developed, and what to do about each.
 
 | Symptom | What to do |
 |---|---|
-| The check fails the artwork URL, and the page shows an `aida-public` URL | Stitch re-hosted the image at 512px. Put your suffixed URL back in the downloaded HTML, then capture and upload. |
+| The check fails the artwork URL, and the page shows an `aida-public` URL | Stitch re-hosted the image at 512px without a size suffix. Unlike `/aida/` URLs, `aida-public` URLs do not expire—keep the `aida-public` URL and append `=w<native width>` to it by running `node <skill-dir>/scripts/artwork.ts fix-html <screen.html> --images <name>.images.txt`, then capture and upload. |
+| An `/aida/` artwork URL expired (broken image or HTTP 403 after 1–2 days) | Run `node <skill-dir>/scripts/artwork.ts refresh <name>.images.txt --swap <screen.html> --swap <name>.prompt.md --swap DESIGN.md` to mint a fresh signed URL from the recorded `screen=<image-screen-id>` (or local `file=`) and swap it in, then capture and upload `<screen.html>` if updating the canvas. |
 | `stitch edit` returns the old id | The new screen's id is in `data.updated.id` (or in an `htmlCode`-bearing object deeper in the JSON), not `data.id`. |
 | An edit with a tiny prompt reports success but nothing changed | Send the complete prompt. |
 | A highlighted row inside a subgrid pushes its icon into the text | Padding on a subgrid row squeezes its outer tracks. Draw the highlight with `outline` and `outline-offset`, or keep padding outside the subgrid. |
