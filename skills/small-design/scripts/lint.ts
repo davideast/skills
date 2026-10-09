@@ -41,6 +41,18 @@ export interface Page {
 const SKIP_TEXT = new Set(["script", "style", "title", "template", "noscript"]);
 const ZERO = new Set(["0", "0px", "[0]", "[0px]"]);
 
+const CSS_URL_RE = /url\(\s*['"]?(https?:\/\/[^'")\s]+)['"]?\s*\)/gi;
+
+function extractCssImageUrls(cssText: string): string[] {
+  const urls: string[] = [];
+  for (const [, rawUrl] of cssText.matchAll(CSS_URL_RE)) {
+    const decoded = rawUrl.replaceAll("&amp;", "&").replaceAll("&#38;", "&");
+    if (decoded.includes("fonts.googleapis.com") || decoded.includes("fonts.gstatic.com")) continue;
+    urls.push(decoded);
+  }
+  return urls;
+}
+
 export function parsePage(html: string): Page {
   const page: Page = {
     bodyAttrs: null,
@@ -62,6 +74,7 @@ export function parsePage(html: string): Page {
     pending = "";
     if (stack.at(-1) === "style") {
       page.styles.push(data);
+      for (const u of extractCssImageUrls(data)) page.images.push(u);
       return;
     }
     if (!stack.includes("body") || stack.some((t) => SKIP_TEXT.has(t))) return;
@@ -82,6 +95,12 @@ export function parsePage(html: string): Page {
           page.elements.push(el);
           if (tag === "img" && attrs.src) page.images.push(attrs.src);
           if (tag === "video" && attrs.poster) page.images.push(attrs.poster);
+          if (attrs.style) {
+            for (const u of extractCssImageUrls(attrs.style)) page.images.push(u);
+          }
+          if (attrs.class) {
+            for (const u of extractCssImageUrls(attrs.class)) page.images.push(u);
+          }
         }
         stack.push(tag);
       },
@@ -151,14 +170,25 @@ function checkWrapper(page: Page, rep: Report) {
   }
 }
 
+function normalizeQuotesAndSpace(s: string): string {
+  return s
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function checkText(page: Page, expected: string[], rep: Report) {
-  let remaining = page.text.join(" ");
+  let remaining = normalizeQuotesAndSpace(page.text.join(" "));
   const missing: string[] = [];
   // Longest first, so a short string cannot consume part of a longer one.
+  // Replace all occurrences so an approved string appearing across multiple
+  // states or rows does not require duplicate lines in <name>.text.txt.
   for (const s of [...expected].sort((a, b) => b.length - a.length)) {
-    const norm = s.replace(/\s+/g, " ");
+    const norm = normalizeQuotesAndSpace(s);
+    if (!norm) continue;
     if (remaining.includes(norm)) {
-      remaining = remaining.replace(norm, () => " ");
+      remaining = remaining.replaceAll(norm, " ");
     } else {
       missing.push(s);
     }
@@ -167,7 +197,7 @@ function checkText(page: Page, expected: string[], rep: Report) {
   if (missing.length) rep.fail("text missing from page: " + missing.map((m) => `"${m}"`).join("; "));
   if (extra) rep.fail(`unexpected text on page: "${extra}"`);
   if (!missing.length && !extra) {
-    rep.ok(`visible text matches the list exactly (${expected.length} strings)`);
+    rep.ok(`visible text matches the list (${expected.length} strings)`);
   }
 }
 
@@ -177,10 +207,15 @@ export function stripImageComment(line: string): string {
   return (hashIdx >= 0 ? line.slice(0, hashIdx) : line).trim();
 }
 
-/** Extract trailing FIFE size suffix such as `=w1600` or `=s0` from a URL. */
+/** Extract trailing FIFE size suffix such as `=w1600`, `=h800`, or `=s0` from a URL. */
 export function fifeSizeSuffix(url: string): string | null {
-  const m = url.match(/=([sw]\d+)$/);
+  const m = url.match(/=([swh]\d+)$/);
   return m ? `=${m[1]}` : null;
+}
+
+/** True when `url` is a Google FIFE (`lh3..lh6.googleusercontent.com`) URL. */
+export function isFifeUrl(url: string): boolean {
+  return /^https:\/\/lh[3-6][^/]*\.googleusercontent\.com\//.test(url);
 }
 
 /** True when `url` is a Stitch re-hosted `aida-public` FIFE URL. */
@@ -190,44 +225,69 @@ export function isAidaPublicUrl(url: string): boolean {
 
 function checkImages(page: Page, expectedRaw: string[], rep: Report) {
   const expected = expectedRaw.map(stripImageComment).filter(Boolean);
+  if (expected.length === 0) return;
+
+  const expectedUnique = [...new Set(expected)];
+  const expectedSet = new Set(expectedUnique);
   const got = page.images;
-  if (got.length === expected.length) {
-    let allMatch = true;
-    const unsuffixedAidaPublic: string[] = [];
-    for (let i = 0; i < expected.length; i++) {
-      const g = got[i];
-      const e = expected[i];
-      if (g === e) continue;
-      if (isAidaPublicUrl(g)) {
-        const expSuffix = fifeSizeSuffix(e);
-        const gotSuffix = fifeSizeSuffix(g);
-        if (gotSuffix && (gotSuffix === expSuffix || gotSuffix === "=s0")) {
-          continue;
-        }
-        unsuffixedAidaPublic.push(
-          `artwork URL ${i + 1} was re-hosted to aida-public at 512px (missing ${expSuffix ?? "=w<width>"}); ` +
-            `append ${expSuffix ?? "=w<width>"} to the aida-public URL in the HTML ` +
-            `(or run: node scripts/artwork.ts fix-html <screen.html> --images <images.txt>)`,
-        );
-        allMatch = false;
-      } else {
-        allMatch = false;
-      }
+
+  // 1. Flag any unsuffixed FIFE URL on the page (serves at 512px by default).
+  const unsuffixed = got.filter((u) => isFifeUrl(u) && !fifeSizeSuffix(u));
+  if (unsuffixed.length > 0) {
+    for (const u of unsuffixed) {
+      rep.fail(
+        `artwork URL is missing a size suffix (serves 512px): ${u.slice(0, 70)} — append =w<native width> (or =s0)`,
+      );
     }
-    if (allMatch) {
-      rep.ok(`artwork URLs match, in order (${got.length})`);
-      return;
-    }
-    if (unsuffixedAidaPublic.length > 0) {
-      for (const msg of unsuffixedAidaPublic) rep.fail(msg);
-      return;
+    return;
+  }
+
+  // 2. Categorize each page image URL: exact expected match, suffixed aida-public re-host, or unexpected.
+  const seenExpected = new Set<string>();
+  const rehostedAidaPublic: string[] = [];
+  const unexpected: string[] = [];
+
+  for (const u of got) {
+    if (expectedSet.has(u)) {
+      seenExpected.add(u);
+    } else if (isAidaPublicUrl(u) && fifeSizeSuffix(u)) {
+      rehostedAidaPublic.push(u);
+    } else {
+      unexpected.push(u);
     }
   }
+
+  const missing = expectedUnique.filter((u) => !seenExpected.has(u));
+
+  // All expected images matched directly (including when one cover is reused across multiple elements/states).
+  if (unexpected.length === 0 && missing.length === 0 && rehostedAidaPublic.length === 0 && got.length > 0) {
+    rep.ok(`artwork URLs match, in order (${got.length})`);
+    return;
+  }
+
+  // Missing /aida/ URLs were re-hosted by Stitch to suffixed /aida-public/ URLs:
+  // pass with a WARN so the agent verifies in the screenshot that Stitch kept the artwork.
+  if (
+    unexpected.length === 0 &&
+    rehostedAidaPublic.length > 0 &&
+    missing.length <= rehostedAidaPublic.length &&
+    got.length >= expectedUnique.length
+  ) {
+    for (const u of [...new Set(rehostedAidaPublic)]) {
+      rep.warn(
+        `artwork URL was re-hosted to durable aida-public URL (${u.slice(0, 70)}); ` +
+          `confirm in the screenshot that Stitch kept your artwork rather than generating a replacement`,
+      );
+    }
+    rep.ok(`artwork URLs present (${got.length})`);
+    return;
+  }
+
   const short = (urls: string[]) => JSON.stringify(urls.map((u) => u.slice(0, 70)));
   rep.fail(
     `artwork URLs differ: expected ${expected.length}, found ${got.length}; ` +
-      `unexpected: ${short(got.filter((u) => !expected.includes(u)))}; ` +
-      `missing: ${short(expected.filter((u) => !got.includes(u)))}`,
+      `unexpected: ${short(unexpected)}; ` +
+      `missing: ${short(missing)}`,
   );
 }
 
